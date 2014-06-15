@@ -1,20 +1,96 @@
-# Reproducible Research: Peer Assessment 1
+Reproducible Research - Peer Assessment 1
+========================================================
 
+Loading and preprocessing the data
 
-## Loading and preprocessing the data
+```{r}
+#load the data
+data <- read.csv("activity.csv")
 
+# convert date format
+data$date <- as.Date(data$date, format = "%Y-%m-%d")  
 
+#add total steps per days
+data.day <- aggregate(data$steps, by = list(data$date), sum)
+names(data.day) [1] <- "date"
+names(data.day) [2] <- "steps"
 
-## What is mean total number of steps taken per day?
+#add total steps per interval
+data.interval <- aggregate(data$steps, by = list(data$interval), sum, na.rm = TRUE)
+names(data.interval) [1] <- "interval"
+names(data.interval) [2] <- "steps"
 
+#average steps per interval
+data.interval.mean <- aggregate(data$steps, by = list(data$interval), mean, na.rm = TRUE, na.action = NULL)
+names(data.interval.mean) [1] <- "interval"
+names(data.interval.mean) [2] <- "avgsteps"
+```
+Mean Total Steps Per Day
 
+```{r}
+#create a histogram of total number of steps taken per day
+hist(data.day$steps, main = "Total Steps Per Day", xlab = "total steps")
 
-## What is the average daily activity pattern?
+#calculate mean number of steps per day
+mean(data.day$steps, na.rm = TRUE)
 
+#calculate median number of steps per day
+median(data.day$steps, na.rm = TRUE)
+```
 
+Average Daily Activity Pattern
+```{r}
+#create a time series plot
+plot(data.interval.mean$interval, data.interval.mean$avgsteps, type = "n", main = "Average Steps in 5-minute Intervals")
+lines(data.interval.mean$interval, data.interval.mean$avgsteps, type = "l")
 
-## Imputing missing values
+#find date with maximum number of steps
+data.interval.mean[which.max(data.interval.mean$avgsteps), 1]
+```
+Inputting Missing Values
 
+```{r}
+#calculate number of missing values in steps column
+sum(is.na(data$steps))
 
+#fill in missing values by substituting the interval mean
+data.empty <- merge(data, data.interval.mean, by = "interval", sort = FALSE)
+data.empty <- data.empty[with(data.empty, order(date, interval)), ] 
+data.empty$steps[is.na(data.empty$steps)] <- data.empty$avgsteps[is.na(data.empty$steps)]
+data.empty$avgsteps <- NULL
 
-## Are there differences in activity patterns between weekdays and weekends?
+#create a new dataset with missing data filled in
+data.complete <- data.empty[, c(2, 3, 1)]
+
+#create a new histogram of total steps per day
+data.day.complete <- aggregate(data$steps, by = list(data$date), sum)
+names(data.day.complete) [1] <- "date"
+names(data.day.complete) [2] <- "steps"
+hist(data.complete$steps, main = "Total Steps Per Day", xlab = "total steps")
+
+#calculate average number of steps per day
+mean(data.day.complete$steps)
+
+#calculate median number of steps per day
+median(data.day.complete$steps)
+
+```     
+Differences in Activity for Weekends vs. Weekdays
+
+```{r}
+#create a new copy of the data
+data.complete.2 <- data.complete
+
+#create factor with day names for dates
+data.complete.2$weekdays <- factor(format(data.complete.2$date, "%A"))
+levels(data.complete.2$weekdays)
+levels(data.complete.2$weekdays) <- list(weekday = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), weekend = c("Saturday", "Sunday"))
+data.complete.2.interval.mean <- aggregate(data.complete.2$steps, by = list(data.complete.2$weekdays, data.complete.2$interval), mean, na.rm= TRUE, na.action = NULL)
+names(data.complete.2.interval.mean) [1] <- "weekday"
+names(data.complete.2.interval.mean) [2] <- "interval"
+names(data.complete.2.interval.mean) [3] <- "avgsteps"
+
+#create a panel plot
+library(lattice)
+xyplot(data.complete.2.interval.mean$avgsteps ~ data.complete.2.interval.mean$interval | data.complete.2.interval.mean$weekday, layout = c(1, 2), type = "l", xlab = "Interval", ylab = "Number of Steps")
+```
