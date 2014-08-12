@@ -8,7 +8,8 @@ This is my submission for Reproducible Research Peer Assessment #1
 Loading and preprocessing the data:
 -------------------------------
 
-```{r, echo = TRUE, warning = FALSE, message = FALSE}
+
+```r
 ## load the data
 activity <- read.csv("activity.csv")
 
@@ -20,42 +21,70 @@ totalsteps <- activity %.% group_by(date) %.% summarise(total = sum(steps, na.rm
 Mean total number of steps taken per day:
 -------------------------------
 
-```{r, echo = TRUE}
 
+```r
 ##create histogram of total number of steps taken per day
 hist(totalsteps$total, main = "Histogram of Total Steps per Day", xlab = "number of steps")
+```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
+```r
 ## calculate mean total steps
 meansteps <- mean(totalsteps$total)
 meansteps
+```
 
+```
+## [1] 9354
+```
+
+```r
 ##calculate median total steps
 mediansteps <- median(totalsteps$total)
 mediansteps
+```
 
-
+```
+## [1] 10395
 ```
 
 Average daily activity pattern:
 -------------------------------
-```{r, echo = TRUE}
+
+```r
 ##calculate mean number of steps per interval 
 meaninterval <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 
 ##plot the average steps per 5-minute interval
 plot(meaninterval ~ unique(activity$interval), type = "l", xlab = "5-min interval", ylab = "steps", main = "Average Daily Activity Pattern")
+```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+```r
 ##find the interval with the maximum number of steps (the first number is the interval with the most steps)
 which.max(meaninterval)
+```
 
+```
+## 835 
+## 104
 ```
 
 Imputing missing values:
 -------------------------------
-```{r, echo = TRUE}
+
+```r
 ##calculate the number of missing values in the dataset
 sum(is.na(activity))
+```
 
+```
+## [1] 2304
+```
+
+```r
 ##create a new data frame identical to the original to add the imputed values to
 activityfull <- activity
 
@@ -72,21 +101,36 @@ fulltotalsteps <- activityfull %.% group_by(date) %.% summarise(total = sum(step
 
 ##create histogram of total number of steps taken per day with missing values imputed
 hist(fulltotalsteps$total, main = "Histogram of Total Steps per Day", xlab = "number of steps")
+```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
+```r
 ## calculate mean total steps with missing values imputed
 fullmeansteps <- mean(fulltotalsteps$total)
 fullmeansteps
+```
 
+```
+## [1] 10766
+```
+
+```r
 ##calculate median total steps with missing values imputed
 fullmediansteps <- median(fulltotalsteps$total)
 fullmediansteps
+```
+
+```
+## [1] 10766
 ```
 Imputing values for the missing data increases the number of mean and median steps, which makes sense -  the missing values previously would have essentially counted as 0, but now that missing value has been replaced with a number.
 
 
 Differences in weekday vs. weekend activity patterns:
 -------------------------------
-```{r, echo = TRUE}
+
+```r
 ##create a new column in the data to indicate the day of the week, initially setting all values to weekday
 activityfull$dayofweek <- c("weekday")
 
@@ -103,5 +147,12 @@ meaninterval_weekend <- tapply(activity_weekend$steps, activity_weekend$interval
 
 ##plot the average steps per 5-minute interval for weekday and weekend
 plot(meaninterval_weekday ~ unique(activity_weekday$interval), type = "l", xlab = "5-min interval", ylab = "steps", main = "Average Daily Activity Pattern, Weekdays")
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-51.png) 
+
+```r
 plot(meaninterval_weekend ~ unique(activity_weekend$interval), type = "l", xlab = "5-min interval", ylab = "steps", main = "Average Daily Activity Pattern, Weekends")
 ```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-52.png) 
